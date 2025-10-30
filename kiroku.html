@@ -19,12 +19,14 @@ button:hover { background:#218838; }
 #progress { position:fixed; top:10px; left:10px; }
 #practiceBtn { position: fixed; bottom: 10px; right: 10px; }
 #setumeiBtn { position: fixed; bottom: 10px; left: 10px; padding: 5px 5px; font-size: clamp(1rem,3vw,1.2rem); border-radius: 10px; }
+#rankingBtn { position: fixed; bottom: 10px; left: 130px; padding: 5px 5px; font-size: clamp(1rem,3vw,1.2rem); border-radius: 10px; }
 
 </style>
 </head>
 <body>
 
 <h1>🏋️‍♂️ 記録モード</h1>
+<p><h4>アップデート: ランキングを追加しました。</h4></p>
 <h2 id="recordModeLabel"></h2>
 <div id="progress">0 / 5</div>
 
@@ -40,6 +42,8 @@ button:hover { background:#218838; }
 <button id="practiceBtn" onclick="location.href='index.html'">練習モード</button>
 
 <button id="setumeiBtn" onclick="location.href='setumei.html'">説明モード</button>
+
+<button id="rankingBtn" onclick="location.href='ranking.html'">ランキング</button>
 <script>
 const plateData=[
   {weight:25,color:'red'},
