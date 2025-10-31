@@ -5,16 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>補助員重量計算ゲーム</title>
 <style>
-body { font-family: 'Segoe UI'; text-align: center; background: #222; color: #fff; margin:0; padding:0; }
+body { font-family: 'Segoe UI'; text-align: center; background: #ef4b4b; color: #000000; margin:0; padding:0; }
 h1 { font-size: clamp(1.2rem,4vw,2rem); margin-top:10px; }
-h2 { font-size: clamp(1rem,3.5vw,1.5rem); margin:5px; color: #FFD700; }
-button { background:#28a745; color:#fff; border:none; padding:12px 24px; border-radius:10px; cursor:pointer; font-size:clamp(1rem,3vw,1.2rem); margin:10px; }
-button:hover { background:#218838; }
+h2 { font-size: clamp(1rem,3.5vw,1.5rem); margin:5px; color: #f3f3f3; }
+button { background:#7d0707; color:#fff; border:none; padding:12px 24px; border-radius:10px; cursor:pointer; font-size:clamp(1rem,3vw,1.2rem); margin:10px; }
+button:hover { background:#1c6f2e; }
+button:disabled { background:#872929; cursor:not-allowed; }
+
 .plates, .selected-area { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-inline:auto; max-width:600px; }
 .plate, .selected-plate { border-radius:50%; width:clamp(60px,18vw,80px); height:clamp(60px,18vw,80px); display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:bold; transition:transform 0.2s; user-select:none; flex-direction:column; }
 .plate:active { transform: scale(0.9); }
 .selected-plate { width:clamp(50px,15vw,70px); height:clamp(50px,15vw,70px); font-size:clamp(0.8rem,3vw,1rem); }
+
 #bar,#target,#result { font-size:clamp(1rem,3.5vw,1.3rem); margin:5px; }
+
 #setumeiBtn { position: fixed; bottom: 10px; left: 10px; padding: 5px 5px; font-size: clamp(1rem,3vw,1.2rem); border-radius: 10px; }
 #rankingBtn { position: fixed; bottom: 10px; left: 130px; padding: 5px 5px; font-size: clamp(1rem,3vw,1.2rem); border-radius: 10px; }
 </style>
@@ -24,12 +28,16 @@ button:hover { background:#218838; }
 <h1>🏋️‍♂️ パワーリフティング補助員ゲーム</h1>
 <p><h4>アップデート: ランキングを追加しました。</h4></p>
 <p>バー重量: 20kg</p>
-<button id="okBtn">OK</button>
-<!-- 記録モードボタンはリンクに変更 -->
+
+<button id="okBtn" disabled>OK</button>
+
 <button id="recordModeBtn" style="position:fixed; bottom:10px; right:10px;"
   onclick="location.href='kiroku.html';">記録モード</button>
+
 <button id="setumeiBtn" onclick="location.href='setumei.html'">説明モード</button>
+
 <button id="rankingBtn" onclick="location.href='ranking.html'">ランキング</button>
+
 <h2 id="target"></h2>
 <div class="plates" id="plates"></div>
 <p id="bar">現在の合計: 0kg</p>
@@ -50,15 +58,19 @@ const plateData=[
 ];
 
 let selected=[],targetWeight=0;
-
-document.getElementById('okBtn').onclick=startGame;
+let okBtn = document.getElementById('okBtn');
+okBtn.disabled = true;
 
 function startGame(){
   const possibleWeights=[];
-  for(let w=25;w<=300;w+=2.5) possibleWeights.push(w);
+  // 25kg から 350kg まで
+  for(let w=25; w<=350; w+=2.5) possibleWeights.push(w);
   targetWeight = possibleWeights[Math.floor(Math.random()*possibleWeights.length)];
   selected=[];
+  okBtn.disabled = true;
+
   document.getElementById('target').textContent=`目標重量: ${targetWeight} kg`;
+  document.getElementById('target').style.color='#1031ff';
   document.getElementById('result').textContent='';
   document.getElementById('selectedArea').innerHTML='';
   renderPlates();
@@ -74,7 +86,14 @@ function renderPlates(){
     el.textContent=p.label||p.weight;
     el.style.background=p.color;
     el.style.color=p.textColor||'#fff';
-    el.onclick=()=>{ addPlate(p); };
+
+    el.onclick = () => {
+      if(targetWeight >= 75 && p.color === "blue"){
+        return;
+      }
+      addPlate(p);
+    };
+
     div.appendChild(el);
   });
 }
@@ -94,7 +113,6 @@ function renderSelected(){
     el.style.background = p.color;
     el.style.color = p.textColor || '#fff';
     el.innerHTML = `<div>${p.label||p.weight}</div>`;
-    // タップで取り外し
     el.onclick = () => {
       selected.splice(index,1);
       renderSelected();
@@ -107,7 +125,14 @@ function renderSelected(){
 function updateTotal(){
   const plateSum = selected.reduce((a,b)=>a+b.weight,0);
   const total = 20 + plateSum*2;
-  document.getElementById('bar').textContent=`現在の合計: ${total.toFixed(2)} kg`;
+  const bar = document.getElementById('bar');
+  bar.textContent=`現在の合計: ${total.toFixed(2)} kg`;
+
+  // ✅ 目標との差で色変化
+  const diff = Math.abs(total - targetWeight);
+  if(diff === 0) bar.style.color = '#0f0';       // 緑：正解
+  else if(diff <= 5) bar.style.color = '#ff0';    // 黄色：近い
+  else bar.style.color = '#fff';                  // 白：まだ遠い
 
   const lastPlate = selected[selected.length-1];
   const lastPlateIsColor = lastPlate && lastPlate.color==='silver';
@@ -117,23 +142,28 @@ function updateTotal(){
     if(p.color==='silver' && i<selected.length-1 && selected[i+1].weight===1.25) colorBefore125=true;
   });
 
+  let resultText="";
   if(total===targetWeight && lastPlateIsColor && !colorInMiddle && !colorBefore125){
-    document.getElementById('result').textContent="✅ 正解！（最後にカラー付きOK）";
+    resultText="✅ 正解！（最後にカラー付きOK）";
+    okBtn.disabled=false;
   } else if(total===targetWeight && !lastPlateIsColor){
-    document.getElementById('result').textContent="⚠️ 最後に必ずカラーを置いてください";
+    resultText="⚠️ 最後に必ずカラーを置いてください";
   } else if(colorInMiddle){
-    document.getElementById('result').textContent="⚠️ カラーは最後に1回だけ置いてください";
+    resultText="⚠️ カラーは最後に1回だけ置いてください";
   } else if(colorBefore125){
-    document.getElementById('result').textContent="⚠️ カラーの後に1.25kgは置けません";
+    resultText="⚠️ カラーの後に1.25kgは置けません";
   } else if(total>targetWeight){
-    document.getElementById('result').textContent="❌ オーバー";
-  } else {
-    document.getElementById('result').textContent="";
+    resultText="❌ オーバー";
   }
+
+  document.getElementById('result').textContent=resultText;
 }
 
-// 初期化
+// ✅ OKボタンで次の目標に進む
+okBtn.onclick = () => { startGame(); };
+
 startGame();
 </script>
+
 </body>
 </html>
