@@ -5,28 +5,134 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>補助員重量計算ゲーム</title>
 <style>
-body { font-family: 'Segoe UI'; text-align: center; background: #ef4b4b; color: #000000; margin:0; padding:0; }
-h1 { font-size: clamp(1.2rem,4vw,2rem); margin-top:10px; }
-h2 { font-size: clamp(1rem,3.5vw,1.5rem); margin:5px; color: #f3f3f3; }
-button { background:#7d0707; color:#fff; border:none; padding:12px 24px; border-radius:10px; cursor:pointer; font-size:clamp(1rem,3vw,1.2rem); margin:10px; }
-button:hover { background:#1c6f2e; }
-button:disabled { background:#872929; cursor:not-allowed; }
+body {
+    font-family: 'Carter One', cursive;
+    text-align: center;
+    background: #1b0f26 url("https://cdn.pixabay.com/photo/2017/10/25/16/23/halloween-2893710_1280.jpg") center/cover no-repeat;
+    color: #ffeed6;
+    margin: 0;
+    padding: 0;
+}
 
-.plates, .selected-area { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-inline:auto; max-width:600px; }
-.plate, .selected-plate { border-radius:50%; width:clamp(60px,18vw,80px); height:clamp(60px,18vw,80px); display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:bold; transition:transform 0.2s; user-select:none; flex-direction:column; }
-.plate:active { transform: scale(0.9); }
-.selected-plate { width:clamp(50px,15vw,70px); height:clamp(50px,15vw,70px); font-size:clamp(0.8rem,3vw,1rem); }
+/* タイトルをハロウィン色で光る */
+h1 {
+    font-size: clamp(1.2rem,4vw,2rem);
+    margin-top: 10px;
+    color: #ffa726;
+    text-shadow: 0 0 8px #ff6f00;
+}
 
-#bar,#target,#result { font-size:clamp(1rem,3.5vw,1.3rem); margin:5px; }
+h2 {
+    font-size: clamp(1rem,3.5vw,1.5rem);
+    margin: 5px;
+    color: #ffe0b2;
+    text-shadow: 0 0 5px #ff6f00;
+}
 
-#setumeiBtn { position: fixed; bottom: 10px; left: 10px; padding: 5px 5px; font-size: clamp(1rem,3vw,1.2rem); border-radius: 10px; }
-#rankingBtn { position: fixed; bottom: 10px; left: 130px; padding: 5px 5px; font-size: clamp(1rem,3vw,1.2rem); border-radius: 10px; }
+/* 🎃 ボタン・ハロウィンカラー */
+button {
+    background: #ff6f00;
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: clamp(1rem,3vw,1.2rem);
+    margin: 10px;
+    box-shadow: 0 0 10px #ff9100;
+    transition: 0.2s;
+}
+button:hover {
+    background: #ffa726;
+    transform: scale(1.05);
+}
+button:disabled {
+    background: #5c3a13;
+    cursor: not-allowed;
+}
+
+/* プレートUI（見た目だけハロウィン風に） */
+.plates, .selected-area {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-inline: auto;
+    max-width: 600px;
+}
+
+/* ハロウィンっぽく少し光らせる */
+.plate, .selected-plate {
+    border-radius: 50%;
+    width: clamp(60px,18vw,80px);
+    height: clamp(60px,18vw,80px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: bold;
+    transition: transform 0.2s;
+    user-select: none;
+    flex-direction: column;
+    box-shadow: 0 0 12px rgba(255, 102, 0, 0.7), 0 0 8px inset #000;
+}
+.plate:active {
+    transform: scale(0.9) rotate(-3deg);
+}
+.selected-plate {
+    width: clamp(50px,15vw,70px);
+    height: clamp(50px,15vw,70px);
+    font-size: clamp(0.8rem,3vw,1rem);
+}
+
+/* 重量表示 */
+#bar, #target, #result {
+    font-size: clamp(1rem,3.5vw,1.3rem);
+    margin: 5px;
+    color: #ffd59e;
+    text-shadow: 0 0 6px #ff9100;
+}
+
+/* ✅ページ移動ボタンもハロウィン色で統一 */
+#setumeiBtn {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    padding: 5px 5px;
+    font-size: clamp(1rem,3vw,1.2rem);
+    border-radius: 10px;
+    background:#ff6f00;
+    box-shadow:0 0 8px #ff9100;
+}
+
+#rankingBtn {
+    position: fixed;
+    bottom: 10px;
+    left: 130px;
+    padding: 5px 5px;
+    font-size: clamp(1rem,3vw,1.2rem);
+    border-radius: 10px;
+    background:#ff6f00;
+    box-shadow:0 0 8px #ff9100;
+}
+
+#feedbackBtn {
+    position: fixed;
+    bottom: 10px;
+    left: 405px;
+    padding: 5px 5px;
+    font-size: clamp(1rem,3vw,1.2rem);
+    border-radius: 10px;
+    background:#ff6f00;
+    box-shadow:0 0 8px #ff9100;
+}
+
 </style>
 </head>
 <body>
 
 <h1>🏋️‍♂️ パワーリフティング補助員ゲーム</h1>
-<p><h4>アップデート: 11月5日までハロウィンの色 11月2日までレベルを選べます。</h4></p>
+<p><h4>アップデート: 11月5日までハロウィンの色</h4></p>
 <p>バー重量: 20kg</p>
 
 <button id="okBtn" disabled>OK</button>
@@ -37,6 +143,8 @@ button:disabled { background:#872929; cursor:not-allowed; }
 <button id="setumeiBtn" onclick="location.href='setumei.html'">説明モード</button>
 
 <button id="rankingBtn" onclick="location.href='ranking.html'">ランキング</button>
+
+<button id="feedbackBtn" onclick="location.href='fiidobaltuku.html'">フィードバック</button>
 
 <h2 id="target"></h2>
 <div class="plates" id="plates"></div>
@@ -87,12 +195,16 @@ function renderPlates(){
     el.style.background=p.color;
     el.style.color=p.textColor||'#fff';
 
-    el.onclick = () => {
-      if(targetWeight >= 75 && p.color === "blue"){
-        return;
-      }
-      addPlate(p);
-    };
+el.onclick = () => {
+  // ✅ 75kg以上で、青を押したい、かつ25kgがまだ入ってない → 押せない
+  const has25 = selected.some(x => x.weight === 25);
+  if(targetWeight >= 75 && p.color === "blue" && !has25){
+    document.getElementById('result').textContent = "⚠️ 最初に20kg(青)は置けません。先に25kgを置いてください。";
+    return;
+  }
+  addPlate(p);
+};
+
 
     div.appendChild(el);
   });
@@ -163,6 +275,7 @@ function updateTotal(){
 okBtn.onclick = () => { startGame(); };
 
 startGame();
+
 </script>
 
 </body>
