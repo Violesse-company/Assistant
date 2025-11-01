@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>管理者用フィードバック</title>
+<style>
+  body { font-family:"Segoe UI",sans-serif; background:#1b0f26; color:#ffe0b2; padding:20px; text-align:center; }
+  input, select, button { padding:6px 10px; border-radius:6px; border:none; margin:5px; }
+  input, select { width:250px; }
+  button { background:#ff6f00; color:white; cursor:pointer; }
+  button:hover { background:#ffa726; }
+  table { width:95%; max-width:900px; margin:20px auto; border-collapse:collapse; background:rgba(255,255,255,0.1); border-radius:12px; overflow:hidden; }
+  th, td { padding:10px; border-bottom:1px solid rgba(255,255,255,0.2); text-align:left; }
+  th { background:rgba(255,255,255,0.2); }
+  tr:hover { background:rgba(255,255,255,0.1); }
+  #stats { margin-top:20px; text-align:left; max-width:900px; margin-left:auto; margin-right:auto; }
+  #notification { display:none; position:fixed; top:10px; left:50%; transform:translateX(-50%); background:#ff6f00; color:white; padding:10px 20px; border-radius:12px; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.3); z-index:1000; }
+  .modal { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); justify-content:center; align-items:center; z-index:1001; }
+  .modal-content { background:#1b0f26; color:#ffe0b2; padding:20px; border-radius:12px; max-width:80%; max-height:80%; overflow:auto; }
+  #loginForm { margin-top:50px; }
+</style>
+</head>
+<body>
+
+<h1>💬 管理者用フィードバック</h1>
+
+<div id="loginForm">
+  <input type="text" id="emailInput" placeholder="メールアドレス"><br>
+  <input type="password" id="passwordInput" placeholder="パスワード">
+  <button type="button" id="togglePassword">表示</button><br>
+  <button id="loginBtn">ログイン</button>
+  <p id="loginStatus"></p>
+</div>
+
+<div id="adminContent" style="display:none;">
+  <label for="filterType">種類で絞り込み:</label>
+  <select id="filterType">
+    <option value="all">すべて</option>
+    <option value="バグ・不具合">バグ・不具合</option>
+    <option value="追加・イベント">追加・イベント</option>
+  </select>
+  <button id="downloadBtn">CSVでダウンロード</button>
+  <div id="notification">新しいフィードバックがあります！クリックで表示</div>
+  <table>
+    <thead>
+      <tr>
+        <th>名前</th>
+        <th>種類</th>
+        <th>コメント</th>
+        <th>日時</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody id="feedbackBody"></tbody>
+  </table>
+  <div id="stats">
+    <h3>統計</h3>
+    <p id="totalCount">総件数: 0</p>
+    <p id="bugCount">バグ・不具合: 0</p>
+    <p id="eventCount">追加・イベント: 0</p>
+    <div id="usageStats">
+    <h3>アプリ利用統計</h3>
+    <p id="todayCount">今日の利用者数: 0</p>
+    <p id="monthCount">過去1か月の利用者数: 0</p>
+</div>
+  </div>
+  <div id="modal" class="modal">
+    <div class="modal-content" id="modalContent"></div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
+import { getFirestore, collection, query, orderBy, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js";
+
+// Firebase 初期化
+const firebaseConfig = {
+  apiKey: "AIzaSyDPloc_j3YFAGQpzCmKAvpxdpr2zIa7lgI",
+  authDomain: "powerlifting-helper-d576e.firebaseapp.com",
+  projectId: "powerlifting-helper-d576e",
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// 管理者アカウント
+const ADMIN_CREDENTIALS = [
+  { email: "miyazaki@example.com", password: "yu-ka121314" },
+  { email: "keita@example.com", password: "keita91451" },
+  { email: "yuuta@example.com", password: "yuuta3921" },
+  { email: "megumi@example.com", password: "megu-mi10315" }
+];
+
+// パスワード表示/非表示
+const passwordInput = document.getElementById("passwordInput");
+document.getElementById("togglePassword").onclick = () => {
+  if(passwordInput.type === "password") {
+    passwordInput.type = "text";
+    document.getElementById("togglePassword").textContent = "非表示";
+  } else {
+    passwordInput.type = "password";
+    document.getElementById("togglePassword").textContent = "表示";
+  }
+};
+
+// ログイン処理
+const loginForm = document.getElementById("loginForm");
+const adminContent = document.getElementById("adminContent");
+const loginStatus = document.getElementById("loginStatus");
+
+document.getElementById("loginBtn").onclick = () => {
+  const email = document.getElementById("emailInput").value.trim();
+  const password = document.getElementById("passwordInput").value;
+  const match = ADMIN_CREDENTIALS.find(acc => acc.email === email && acc.password === password);
+  if(match){
+    loginForm.style.display = "none";
+    adminContent.style.display = "block";
+    initAdmin();
+  } else {
+    loginStatus.textContent = "メールアドレスまたはパスワードが違います";
+  }
+};
+
+// 管理者ページ初期化
+function initAdmin() {
+  let feedbackList = [];
+  let knownIds = new Set();
+  const notificationEl = document.getElementById("notification");
+  const modal = document.getElementById("modal");
+  const modalContent = document.getElementById("modalContent");
+
+  function loadFeedbacks() {
+    const q = query(collection(db,"feedbacks"),orderBy("timestamp","desc"));
+    onSnapshot(q,snapshot=>{
+      const newDocs = snapshot.docs.map(docSnap=>({ id:docSnap.id, ...docSnap.data() }));
+      const fresh = newDocs.filter(f => !knownIds.has(f.id));
+      if(fresh.length>0 && knownIds.size>0){
+        notificationEl.style.display="block";
+        notificationEl.onclick = () => { showModal(fresh[0]); notificationEl.style.display="none"; };
+      }
+      knownIds = new Set(newDocs.map(f=>f.id));
+      feedbackList = newDocs;
+      renderTable();
+      updateStats();
+    });
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById("feedbackBody");
+    tbody.innerHTML="";
+    const filterType = document.getElementById("filterType").value;
+    const filtered = feedbackList.filter(f => filterType==="all" || f.type===filterType);
+    filtered.forEach(f=>{
+      const date = f.timestamp?f.timestamp.toDate().toLocaleString():"-";
+      const tr = document.createElement("tr");
+      tr.id=f.id;
+      tr.innerHTML=`
+        <td>${f.name}</td>
+        <td>${f.type||"-"}</td>
+        <td>${f.comment}</td>
+        <td>${date}</td>
+        <td><button data-id="${f.id}">削除</button></td>
+      `;
+      tbody.appendChild(tr);
+      tr.querySelector("button").onclick = async ()=>{ if(confirm("本当に削除しますか？")) await deleteDoc(doc(db,"feedbacks",f.id)); };
+      tr.querySelector("td:nth-child(3)").onclick = ()=>showModal(f);
+    });
+  }
+
+  function showModal(f){
+    modalContent.innerHTML=`<h3>${f.name} (${f.type||"-"})</h3><p>${f.comment}</p>`;
+    modal.style.display="flex";
+  }
+  modal.onclick = ()=>{ modal.style.display="none"; };
+
+  function updateStats(){
+    const total = feedbackList.length;
+    const bugCount = feedbackList.filter(f=>f.type==="バグ・不具合").length;
+    const eventCount = feedbackList.filter(f=>f.type==="追加・イベント").length;
+    document.getElementById("totalCount").textContent=`総件数: ${total}`;
+    document.getElementById("bugCount").textContent=`バグ・不具合: ${bugCount}`;
+    document.getElementById("eventCount").textContent=`追加・イベント: ${eventCount}`;
+  }
+
+  function downloadCSV(){
+    let csv="名前,種類,コメント,日時\n";
+    feedbackList.forEach(f=>{
+      const date = f.timestamp?f.timestamp.toDate().toLocaleString():"-";
+      csv+=`"${f.name}","${f.type||"-"}","${f.comment}","${date}"\n`;
+    });
+    const blob=new Blob([csv],{type:"text/csv"});
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download="feedbacks.csv";
+    a.click();
+  }
+
+  document.getElementById("downloadBtn").addEventListener("click", downloadCSV);
+  document.getElementById("filterType").addEventListener("change", renderTable);
+
+  loadFeedbacks();
+}
+</script>
+
+</body>
+</html>
