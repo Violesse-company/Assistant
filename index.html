@@ -96,7 +96,7 @@ button:disabled {
 /* ✅ページ移動ボタンもハロウィン色で統一 */
 #setumeiBtn {
     position: fixed;
-    bottom: 10px;
+    bottom: -10px;
     left: 10px;
     padding: 5px 5px;
     font-size: clamp(1rem,3vw,1.2rem);
@@ -107,7 +107,7 @@ button:disabled {
 
 #rankingBtn {
     position: fixed;
-    bottom: 10px;
+    bottom: -10px;
     left: 130px;
     padding: 5px 5px;
     font-size: clamp(1rem,3vw,1.2rem);
@@ -118,9 +118,9 @@ button:disabled {
 
 #feedbackBtn {
     position: fixed;
-    bottom: 10px;
-    left: 405px;
-    padding: 5px 5px;
+    bottom: 30px;
+    left: 5px;
+    padding: 1px 1px;
     font-size: clamp(1rem,3vw,1.2rem);
     border-radius: 10px;
     background:#ff6f00;
@@ -137,8 +137,8 @@ button:disabled {
 
 <button id="okBtn" disabled>OK</button>
 
-<button id="recordModeBtn" style="position:fixed; bottom:10px; right:10px;"
-  onclick="location.href='kiroku.html';">記録モード</button>
+<button id="recordModeBtn" style="position:fixed; bottom:-10px; right:10px;"
+onclick="location.href='kiroku.html';">記録モード</button>
 
 <button id="setumeiBtn" onclick="location.href='setumei.html'">説明モード</button>
 
