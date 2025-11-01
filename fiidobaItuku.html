@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>フィードバック</title>
+<style>
+  body { font-family: "Segoe UI", sans-serif; background:#1b0f26; color:#ffe0b2; text-align:center; padding:20px; }
+  input, textarea, select { width:90%; padding:10px; margin:10px 0; border-radius:10px; border:none; }
+  button { padding:12px 24px; border-radius:10px; border:none; background:#ff6f00; color:white; cursor:pointer; }
+  button:hover { background:#ffa726; }
+</style>
+</head>
+<body>
+
+<h1>フィードバックを送る</h1>
+
+<input id="nameInput" type="text" placeholder="名前(SNS名でもOK)" />
+
+<!-- 選択項目 -->
+<select id="typeSelect">
+  <option value="">種類を選択してください</option>
+  <option value="バグ・不具合">バグ・不具合</option>
+  <option value="追加・イベント">追加・イベント</option>
+</select>
+
+<textarea id="commentInput" rows="5" placeholder="内容を入力してください"></textarea><br/>
+<button id="sendBtn">送信</button>
+<button id="kirokuBtn" onclick="location.href='index.html';">戻る</button>
+
+
+<p id="status"></p>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
+import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDPloc_j3YFAGQpzCmKAvpxdpr2zIa7lgI",
+  authDomain: "powerlifting-helper-d576e.firebaseapp.com",
+  projectId: "powerlifting-helper-d576e",
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const sendBtn = document.getElementById("sendBtn");
+sendBtn.onclick = async () => {
+  const name = document.getElementById("nameInput").value.trim();
+  const comment = document.getElementById("commentInput").value.trim();
+  const type = document.getElementById("typeSelect").value;
+  const status = document.getElementById("status");
+
+  if(!name || !comment || !type) {
+    status.textContent = "名前、種類、コメントをすべて入力してください";
+    return;
+  }
+
+  try {
+    await addDoc(collection(db, "feedbacks"), {
+      name,
+      type,          // 選択項目も保存
+      comment,
+      timestamp: serverTimestamp()
+    });
+    status.textContent = "送信しました！ありがとうございます🎃";
+    document.getElementById("nameInput").value = "";
+    document.getElementById("commentInput").value = "";
+    document.getElementById("typeSelect").value = "";
+  } catch(e) {
+    console.error(e);
+    status.textContent = "送信に失敗しました";
+  }
+};
+</script>
+
+</body>
+</html>
