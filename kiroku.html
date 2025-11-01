@@ -1,236 +1,507 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>補助員重量計算ゲーム（記録モード）</title>
 <style>
-body { font-family: 'Segoe UI'; text-align:center; background:#c93232; color:#fff; margin:0; padding:0; }
-h1 { font-size: clamp(1.2rem,4vw,2rem); margin-top:10px; }
-h2 { font-size: clamp(1rem,3.5vw,1.5rem); margin:5px; color:#FFD700; }
-button { background:#28a745; color:#fff; border:none; padding:12px 24px; border-radius:10px; cursor:pointer; font-size:clamp(1rem,3vw,1.2rem); margin:10px; }
-button:disabled { background:#555; cursor:not-allowed; }
-button:hover:not(:disabled) { background:#218838; }
-.plates,.selected-area{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-inline:auto;max-width:600px;}
-.plate,.selected-plate{border-radius:50%;width:clamp(60px,18vw,80px);height:clamp(60px,18vw,80px);display:flex;align-items:center;justify-content:center;cursor:pointer;font-weight:bold;transition:0.2s;user-select:none;flex-direction:column;}
-.selected-plate{width:clamp(50px,15vw,70px);height:clamp(50px,15vw,70px);}
-#bar,#target,#result,#progress,#timer{font-size:clamp(1rem,3.5vw,1.3rem);margin:5px;}
-#scoreDisplay{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#333;padding:30px;border-radius:20px;font-size:clamp(1rem,4vw,1.8rem);text-align:center;z-index:1000;}
-#progress{position:fixed;top:10px;left:10px;}
-#practiceBtn{position:fixed;bottom:10px;right:10px;}
-#setumeiBtn{position:fixed;bottom:10px;left:10px;padding:5px;font-size:clamp(1rem,3vw,1.2rem);border-radius:10px;}
-#rankingBtn{position:fixed;bottom:10px;left:130px;padding:5px;font-size:clamp(1rem,3vw,1.2rem);border-radius:10px;}
-#timer{color:#ff5555;}
+:root{
+  --bg: #0b0712;        /* とても暗い紫/黒 */
+  --panel: #2e1229;     /* 深めの紫パネル */
+  --accent: #ff7518;    /* かぼちゃオレンジ（アクセント） */
+  --accent-2: #8b5cf6;  /* 補助の紫（強調時） */
+  --text: #f7f1e1;      /* くすんだクリーム（読みやすい） */
+  --muted: rgba(255,255,255,0.06);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: "Segoe UI", Roboto, "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  text-align:center;
+}
+header{padding:14px 8px}
+h1{margin:6px 0;font-size:clamp(1.1rem,3.6vw,1.8rem)}
+main{padding:8px 12px 80px}
+/* mode selector overlay */
+#modeSelect{
+  position:fixed; inset:0; background:rgba(4,4,8,0.7);
+  display:flex; align-items:center; justify-content:center; z-index:2000;
+}
+.modeCard{
+  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.12));
+  border: 1px solid rgba(255,255,255,0.03);
+  padding:18px; border-radius:12px; width:min(640px,92%);
+  box-shadow:0 10px 40px rgba(0,0,0,0.7); text-align:center;
+}
+.modes{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px}
+.modeBtn{
+  background: #3b2a3a; /* 暗めの紫寄り */
+  color:var(--text); border:0; padding:10px 14px; border-radius:10px; cursor:pointer;
+  min-width:120px; font-weight:700;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.6);
+}
+.modeBtn:hover{
+  background: linear-gradient(90deg,var(--accent), #ff9b4a);
+  color:#1b0111;
+  transform: translateY(-3px);
+}
+.modeBtn.active{outline:3px solid rgba(255,117,24,0.12)}
+/* top bar */
+#progress{position:fixed; top:10px; left:10px; font-weight:700;
+  background:rgba(0,0,0,0.25); padding:6px 10px;border-radius:8px}
+#timer{position:fixed; top:10px; right:10px; font-weight:700;
+  background:rgba(0,0,0,0.18); padding:6px 10px;border-radius:8px;color:var(--accent)}
+/* target / bar / result */
+#target{font-size:clamp(1rem,3vw,1.3rem); color:var(--accent); margin:12px 0}
+#bar{margin:8px 0; font-weight:700}
+#result{min-height:1.6em}
+/* plates */
+.plates, .selected-area { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-inline:auto; max-width:900px; }
+.plate, .selected-plate {
+  border-radius:50%; width:clamp(56px,14vw,84px); height:clamp(56px,14vw,84px);
+  display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:800;
+  user-select:none; transition:transform 160ms ease, box-shadow 160ms;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+  border: 2px solid rgba(255,255,255,0.03);
+}
+.plate:active{transform:scale(.96)}
+.selected-plate { width:clamp(46px,12vw,68px); height:clamp(46px,12vw,68px); font-size:0.95rem; }
+/* left/right placement animation */
+.placed-left{ transform-origin:center left; animation:place-left 280ms ease forwards; }
+.placed-right{ transform-origin:center right; animation:place-right 280ms ease forwards; }
+@keyframes place-left { from { transform: translateY(-10px) scale(.9) } to { transform: translateX(-6px) translateY(0) scale(1) } }
+@keyframes place-right { from { transform: translateY(-10px) scale(.9) } to { transform: translateX(6px) translateY(0) scale(1) } }
+
+/* footer action buttons */
+.footerBtns{position:fixed; bottom:10px; left:10px; right:10px; display:flex; justify-content:space-between; gap:8px}
+.leftBtns{display:flex; gap:8px}
+.rightBtns{display:flex; gap:8px}
+.smallBtn{
+  background: linear-gradient(180deg,#2b1b2f, #2f2236);
+  color:var(--text); border:0; padding:8px 12px; border-radius:10px; cursor:pointer;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.6);
+}
+.smallBtn:hover{
+  background:linear-gradient(90deg,var(--accent-2), var(--accent));
+  color:#12030a;
+}
+
+/* next / big controls area */
+.controls{margin:14px 0}
+#nextBtn{background:var(--accent); color:#1b0111; border:0; padding:12px 20px; border-radius:12px; font-size:1rem; cursor:pointer}
+#nextBtn:disabled{background:#6b6b6b; cursor:not-allowed; color:#ddd}
+
+/* result popup */
+#scoreDisplay{position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.7); z-index:3000}
+.scoreCard{background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.12)); padding:18px; border-radius:14px; width:min(760px,95%); text-align:left}
+.scoreCard h2{margin-top:0}
+.scoreRow{display:flex;gap:8px;flex-wrap:wrap}
+.closeBtn{background:var(--accent); color:#12030a; border:0; padding:8px 12px; border-radius:10px; cursor:pointer}
+.backIndex{background:#5b3b3b; color:var(--text); border:0; padding:8px 12px; border-radius:10px; cursor:pointer; margin-left:8px}
+
+/* responsive tweak */
+@media (max-width:520px){
+  .modeBtn{min-width:44%; padding:10px}
+  .plates, .selected-area{gap:8px}
+}
+
 </style>
 </head>
 <body>
 
-<h1>🏋️‍♂️ 記録モード</h1>
-<h2 id="recordModeLabel"></h2>
-<div id="progress">0 / 5</div>
-<div id="timer"></div>
-<h2 id="target"></h2>
-<div class="plates" id="plates"></div>
-<p id="bar">現在の合計: 0kg</p>
-<p id="result"></p>
-<h3>使用プレート:</h3>
-<div class="selected-area" id="selectedArea"></div>
-<button id="nextBtn" disabled>次へ</button>
-<button id="practiceBtn" onclick="location.href='index.html'">練習モード</button>
-<button id="setumeiBtn" onclick="location.href='setumei.html'">説明モード</button>
-<button id="rankingBtn" onclick="location.href='ranking.html'">ランキング</button>
+<header>
+  <h1>🏋️‍♂️ 補助員重量計算ゲーム（記録モード）</h1>
+</header>
+
+<div id="progress">0 / 10</div>
+<div id="timer">--</div>
+
+<main>
+  <div id="target">目標重量: -- kg</div>
+
+  <div class="plates" id="plates"></div>
+
+  <p id="bar">現在の合計: 0kg</p>
+  <p id="result"></p>
+
+  <h3>使用プレート:</h3>
+  <div class="selected-area" id="selectedArea"></div>
+
+  <div class="controls">
+    <button id="nextBtn" disabled>次へ</button>
+  </div>
+</main>
+
+<!-- footer quick links -->
+<div class="footerBtns">
+  <div class="leftBtns">
+    <button class="smallBtn" id="setumeiBtn" onclick="location.href='setumei.html'">説明モード</button>
+    <button class="smallBtn" id="rankingBtn" onclick="location.href='ranking.html'">ランキング</button>
+  </div>
+  <div class="rightBtns">
+    <button class="smallBtn" id="practiceBtn" onclick="location.href='index.html'">練習モード</button>
+    <button class="smallBtn" id="feedbackBtn" onclick="location.href='fiidobaltuku.html'">フィードバック</button>
+  </div>
+</div>
+
+<!-- mode selector (overlay) -->
+<div id="modeSelect">
+  <div class="modeCard">
+    <h2>難易度を選んでください</h2>
+    <p>モードごとに出題範囲と制限時間が変わります。</p>
+    <div class="modes">
+      <button class="modeBtn" data-mode="beginner">初心者<br><small>25〜120kg / 30秒</small></button>
+      <button class="modeBtn" data-mode="intermediate">中級者<br><small>120〜210kg / 20秒</small></button>
+      <button class="modeBtn" data-mode="full">フルギア勢<br><small>210〜350kg / 20秒</small></button>
+      <button class="modeBtn" data-mode="god">神<br><small>25〜350kg / 10秒（合計非表示）</small></button>
+    </div>
+    <p style="margin-top:12px;font-size:0.9rem;color:#ddd">※ 青プレート（20kg）は「目標が75kg以上」の場合、**最初に置くことはできません**（2枚目以降はOK）。</p>
+  </div>
+</div>
+
+<!-- score popup -->
+<div id="scoreDisplay">
+  <div class="scoreCard" role="dialog" aria-modal="true">
+    <h2>📊 記録終了</h2>
+    <div id="scoreContent"></div>
+    <div style="margin-top:12px;text-align:right">
+      <button class="backIndex" id="backIndex">閉じる（ホームへ）</button>
+      <button class="closeBtn" id="closeScore">もう一度（同じモードで再挑戦）</button>
+    </div>
+  </div>
+</div>
 
 <script>
-// ★ 効果音設定（ファイルは後で追加）
-function playSE(p){
-    const sounds = {
-        25:"20.mp3", 20:"20.mp3", 15:"15.mp3", 10:"10.mp3", 5:"5.mp3",
-        "2.5_black":"2_5.mp3", "2.5_silver":"2_5_color.mp3", 1.25:"1_25.mp3",
-        remove:"remove.mp3", correct:"correct.mp3", miss:"miss.mp3"
-    };
-    let key = p;
-    if(typeof p==="object"){
-        if(p.weight===2.5 && p.color==="silver") key="2.5_silver";
-        else if(p.weight===2.5) key="2.5_black";
-        else key=p.weight;
-    }
-    const file = sounds[key];
-    if(!file) return;
-    const audio = new Audio(file);
-    audio.volume=0.6;
-    audio.play().catch(()=>{});
-}
-
-// モード選択
-const mode = prompt("モードを選択\n1: 初心者 25~120kg\n2: 中級者 120~210kg\n3: フルギア勢 210~350kg\n4: 神（25~350kg/重量非表示）");
-let min=25,max=120,hideWeight=false;
-if(mode=="2"){min=120; max=210;}
-if(mode=="3"){min=210; max=350;}
-if(mode=="4"){min=25; max=350; hideWeight=true;}
-document.getElementById('recordModeLabel').textContent=
-    (mode=="1")?"初心者":(mode=="2")?"中級者":(mode=="3")?"フルギア勢":"神モード";
-
-const plateData=[
-  {weight:25,color:'red'},
-  {weight:20,color:'blue'},
-  {weight:15,color:'yellow',textColor:'black'},
-  {weight:10,color:'green'},
-  {weight:5,color:'white',textColor:'black'},
-  {weight:2.5,color:'black'},
-  {weight:2.5,color:'silver',label:'2.5(カラー)'},
-  {weight:1.25,color:'#7fae7f'}
-];
-
-let selected=[],targetWeight=0,recordCount=0,records=[],startTime=0,timerInt;
-
-function updateProgress(){ document.getElementById('progress').textContent=`${recordCount} / 5`; }
-
-// ゲーム開始
-function startGame(){
-  clearInterval(timerInt);
-  const possible=[];
-  for(let w=min; w<=max; w+=2.5) possible.push(w);
-  targetWeight=possible[Math.floor(Math.random()*possible.length)];
-
-  selected=[];
-  document.getElementById('target').textContent=`目標重量: ${targetWeight} kg`;
-  document.getElementById('result').textContent='';
-  document.getElementById('selectedArea').innerHTML='';
-  document.getElementById('nextBtn').disabled=true;
-
-  renderPlates();
-  updateTotal();
-  startTimer();
-  startTime=Date.now();
-}
-
-// タイマー
-function startTimer(){
-  let remain=20;
-  document.getElementById('timer').textContent=`残り時間: ${remain}秒`;
-  timerInt=setInterval(()=>{
-    remain--;
-    document.getElementById('timer').textContent=`残り時間: ${remain}秒`;
-    if(remain<=0){
-      clearInterval(timerInt);
-      document.getElementById('result').textContent="❌ タイムオーバー";
-      playSE("miss");
-      document.getElementById('nextBtn').disabled=false;
-    }
-  },1000);
-}
-
-// プレート描画
-function renderPlates(){
-  const div=document.getElementById('plates');
-  div.innerHTML='';
-  plateData.forEach(p=>{
-    const el=document.createElement('div');
-    el.className='plate';
-    el.textContent=p.label||p.weight;
-    el.style.background=p.color;
-    el.style.color=p.textColor||'#fff';
-    el.onclick=()=>{
-      if(targetWeight>=75 && p.color=="blue") return;
-      addPlate(p);
-    };
-    div.appendChild(el);
-  });
-}
-
-// プレート追加
-function addPlate(p){
-  selected.push(p);
-  playSE(p); // 置く時
-  updateTotal();
-  renderSelected();
-}
-
-// 選択プレート描画
-function renderSelected(){
-  const area=document.getElementById('selectedArea');
-  area.innerHTML='';
-  selected.forEach((p,i)=>{
-    const el=document.createElement('div');
-    el.className='selected-plate';
-    el.style.background=p.color;
-    el.style.color=p.textColor||'#fff';
-    el.textContent=p.label||p.weight;
-    el.onclick=()=>{
-      selected.splice(i,1);
-      playSE("remove"); // 外す時
-      renderSelected();
-      updateTotal();
-    };
-    area.appendChild(el);
-  });
-}
-
-// 合計計算・正誤判定
-function updateTotal(){
-  const plateSum = selected.reduce((a,b)=>a+b.weight,0);
-  const total = 20 + plateSum*2;
-  document.getElementById('bar').textContent=hideWeight?"現在の合計: ???":`現在の合計: ${total}kg`;
-
-  const last=selected[selected.length-1];
-  const lastIsColor=last && last.color==='silver';
-  const colorInMiddle=selected.slice(0,-1).some(p=>p.color==='silver');
-  let color125=false;
-  selected.forEach((p,i)=>{
-    if(p.color==='silver' && i<selected.length-1 && selected[i+1].weight===1.25) color125=true;
-  });
-
-  let res="",correct=false;
-
-  if(total===targetWeight && lastIsColor && !colorInMiddle && !color125){
-    res="✅ 正解！";
-    correct=true;
-    playSE("correct");
-    clearInterval(timerInt);
-  } else if(total===targetWeight && !lastIsColor){ res="⚠️ 最後にカラー必要"; }
-  else if(colorInMiddle){ res="⚠️ カラーは最後だけ"; }
-  else if(color125){ res="⚠️ カラーの後に1.25kg禁止"; }
-  else if(total>targetWeight){ res="❌ オーバー"; playSE("miss"); }
-
-  document.getElementById('result').textContent=res;
-  document.getElementById('nextBtn').disabled=!correct;
-}
-
-// 次へ
-document.getElementById('nextBtn').onclick=()=>{
-  clearInterval(timerInt);
-  const elapsed=(Date.now()-startTime)/1000;
-  const isCorrect=document.getElementById('result').textContent.includes('✅');
-  records.push({correct:isCorrect,time:elapsed});
-  recordCount++;
-  updateProgress();
-  if(recordCount>=5) showRecordResult();
-  else startGame();
+/* ========= 効果音（外部URL） =========
+   プレートごと・外す・正解・ミスに対してURLをセット。
+   このまま動作する公開URLを利用（Google Actions sounds）。
+*/
+const SOUND = {
+  25: "20.mp3",
+  20: "20.mp3",
+  15: "15.mp3",
+  10: "10.mp3",
+  5:  "5.mp3",
+  "2.5_black":"2.5_black.mp3",
+  "2.5_silver":"2.5_silver.mp3",
+  "1.25":"1.25.mp3",
+  remove: "remove.mp3",
+  correct: "correct.mp3",
+  miss: "miss.mp3"
 };
 
-// 結果表示
-function showRecordResult(){
-  const correctCount=records.filter(r=>r.correct).length;
-  const times=records.filter(r=>r.correct).map(r=>r.time.toFixed(2));
-  const correctRate=((correctCount/5)*100).toFixed(1);
-  const avg=(times.reduce((a,b)=>a+parseFloat(b),0)/times.length||0).toFixed(2);
+function playSE(key){
+  const url = SOUND[key];
+  if(!url) return;
+  const a = new Audio(url);
+  a.volume = 0.55;
+  a.play().catch(()=>{/* ignore autoplay errors */});
+}
 
-  let div=document.createElement('div'); div.id='scoreDisplay';
-  div.innerHTML=`
-    <h2>📊 記録終了</h2>
-    <p>正解回数: ${correctCount}/5</p>
-    <p>かかった時間(秒): ${times.join(', ')}</p>
-    <p>正解率: ${correctRate}%</p>
-    <p>平均スピード: ${avg} 秒</p>
-    <button id="scoreCloseBtn">閉じる</button>
-  `;
-  document.body.appendChild(div);
-  document.getElementById('scoreCloseBtn').onclick=()=>{
-    div.remove(); records=[]; recordCount=0; updateProgress(); startGame();
+/* =========== データ & UI 要素 ============ */
+const plateData = [
+  { weight:25, color:'red' },
+  { weight:20, color:'blue' },
+  { weight:15, color:'yellow', textColor:'black' },
+  { weight:10, color:'green' },
+  { weight:5,  color:'white', textColor:'black' },
+  { weight:2.5, color:'black' },
+  { weight:2.5, color:'silver', label:'2.5(カラー)' },
+  { weight:1.25, color:'#7fae7f' }
+];
+
+const platesDiv = document.getElementById('plates');
+const selectedArea = document.getElementById('selectedArea');
+const targetEl = document.getElementById('target');
+const barEl = document.getElementById('bar');
+const resultEl = document.getElementById('result');
+const nextBtn = document.getElementById('nextBtn');
+const progressEl = document.getElementById('progress');
+const timerEl = document.getElementById('timer');
+const modeSelect = document.getElementById('modeSelect');
+const modeBtns = document.querySelectorAll('.modeBtn');
+const scoreDisplay = document.getElementById('scoreDisplay');
+const scoreContent = document.getElementById('scoreContent');
+const closeScore = document.getElementById('closeScore');
+const backIndex = document.getElementById('backIndex');
+
+/* =========== ゲーム状態 ============ */
+let mode = null;
+let modeLabel = '';
+let minW = 25, maxW = 350;
+let timeLimit = 20;
+let hideWeight = false;
+
+let selected = [];
+let targetWeight = 0;
+let recordCount = 0;
+let records = []; // { correct: bool, time: sec (float) }
+let startTime = 0;
+let timerInterval = null;
+let roundsTotal = 10; // 10問
+
+/* =========== モード選択処理 ============ */
+modeBtns.forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    modeBtns.forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const m = btn.dataset.mode;
+    applyMode(m);
+    modeSelect.style.display = 'none';
+    startGame();
+  });
+});
+
+function applyMode(m){
+  mode = m;
+  if(m==='beginner'){ minW=25; maxW=120; timeLimit=30; hideWeight=false; modeLabel='初心者'; }
+  else if(m==='intermediate'){ minW=120; maxW=210; timeLimit=20; hideWeight=false; modeLabel='中級者'; }
+  else if(m==='full'){ minW=210; maxW=350; timeLimit=20; hideWeight=false; modeLabel='フルギア勢'; }
+  else { minW=25; maxW=350; timeLimit=10; hideWeight=true; modeLabel='神'; }
+  // reset progress UI
+  recordCount = 0; records = []; updateProgress();
+}
+
+/* =========== ユーティリティ ============ */
+function randTarget(min, max){
+  const list = [];
+  for(let w = min; w <= max + 0.0001; w += 2.5){
+    // normalize to 2 decimal maybe
+    list.push(Math.round(w * 100)/100);
+  }
+  return list[Math.floor(Math.random()*list.length)];
+}
+
+function updateProgress(){
+  progressEl.textContent = `${recordCount} / ${roundsTotal}`;
+}
+
+/* =========== ゲームフロー ============ */
+function startGame(){
+  clearTimer();
+  // pick target in mode range
+  targetWeight = randTarget(minW, maxW);
+  selected = [];
+  nextBtn.disabled = true;
+  resultEl.textContent = '';
+  renderPlates();
+  renderSelected(); // empty
+  updateTotal();
+  startTimer();
+  startTime = Date.now();
+}
+
+function renderPlates(){
+  platesDiv.innerHTML = '';
+  plateData.forEach(p=>{
+    const el = document.createElement('div');
+    el.className = 'plate';
+    el.textContent = p.label || p.weight;
+    el.style.background = p.color;
+    el.style.color = p.textColor || '#fff';
+
+    // click handler
+    el.addEventListener('click', ()=>{
+      // Blue plate restriction:
+      // if targetWeight >= 75 AND this would be the first plate placed -> do nothing
+      if(p.weight === 20 && targetWeight >= 75 && selected.length === 0){
+        // silently ignore (no error message, visual unchanged)
+        return;
+      }
+      addPlate(p);
+    });
+
+    platesDiv.appendChild(el);
+  });
+}
+
+function addPlate(p){
+  // push a copy to avoid reference issues
+  selected.push(Object.assign({}, p));
+  // play sound for that plate (map weight/color to sound key)
+  let key;
+  if(p.weight === 2.5){
+    key = (p.color === 'silver') ? '2.5_silver' : '2.5_black';
+  } else {
+    key = p.weight;
+  }
+  playSE(key);
+  renderSelected();
+  updateTotal();
+}
+
+/* 左右交互に並べるアニメーション */
+function renderSelected(){
+  selectedArea.innerHTML = '';
+  selected.forEach((p, i) => {
+    const el = document.createElement('div');
+    el.className = 'selected-plate';
+    el.textContent = p.label || p.weight;
+    el.style.background = p.color;
+    el.style.color = p.textColor || '#fff';
+    // left/right class for animation
+    el.classList.add((i % 2 === 0) ? 'placed-left' : 'placed-right');
+    // click to remove
+    el.addEventListener('click', ()=>{
+      // remove and play remove SE
+      selected.splice(i,1);
+      playSE('remove');
+      renderSelected();
+      updateTotal();
+    });
+    selectedArea.appendChild(el);
+  });
+}
+
+/* =========== 合計・判定 ============ */
+function updateTotal(){
+  const plateSum = selected.reduce((a,b)=>a+b.weight,0);
+  const total = Math.round((20 + plateSum*2) * 100) / 100;
+
+  // show or hide per mode (god hides)
+  if(hideWeight) barEl.textContent = "現在の合計: ???";
+  else barEl.textContent = `現在の合計: ${total.toFixed(2)} kg`;
+
+  // progress color hint (optional)
+  const diff = Math.abs(total - targetWeight);
+  if (!hideWeight) {
+    barEl.style.color = diff === 0 ? '#0f0' : (diff <= 5 ? '#ff0' : '#fff');
+  } else {
+    barEl.style.color = '#fff';
+  }
+
+  // last plate must be silver color (カラー) and must be only at end; also no 1.25 after color
+  const last = selected[selected.length - 1];
+  const lastIsColor = last && last.color === 'silver';
+  const colorInMiddle = selected.slice(0, -1).some(p => p.color === 'silver');
+  let colorBefore125 = false;
+  selected.forEach((p, idx) => {
+    if(p.color === 'silver' && idx < selected.length - 1 && selected[idx + 1] && selected[idx+1].weight === 1.25){
+      colorBefore125 = true;
+    }
+  });
+
+  let resText = '';
+  let correct = false;
+
+  if(total === targetWeight && lastIsColor && !colorInMiddle && !colorBefore125){
+    // correct
+    resText = '✅ 正解！（最後にカラー付きOK）';
+    correct = true;
+    playSE('correct');
+    clearTimer(); // stop timer on correct
+  } else if(total === targetWeight && !lastIsColor){
+    resText = '⚠️ 最後に必ずカラーを置いてください';
+  } else if(colorInMiddle){
+    resText = '⚠️ カラーは最後に1回だけ置いてください';
+  } else if(colorBefore125){
+    resText = '⚠️ カラーの後に1.25kgは置けません';
+  } else if(total > targetWeight){
+    resText = '❌ オーバー';
+    // play miss sound but avoid repeating too much (we'll play once when this state entered)
+    playSE('miss');
+  } else {
+    resText = '';
+  }
+
+  resultEl.textContent = resText;
+  // next button enabled only when correct OR when time ran out (handled by timer)
+  nextBtn.disabled = !correct && !window.__allowNextOnTimeout;
+  // update target display
+  targetEl.textContent = `目標重量: ${targetWeight} kg`;
+}
+
+/* =========== タイマー ============ */
+function startTimer(){
+  clearTimer();
+  let remain = timeLimit;
+  window.__allowNextOnTimeout = false; // flag set to true on timeout
+  timerEl.textContent = `残り時間: ${remain}秒`;
+
+  timerInterval = setInterval(()=>{
+    remain--;
+    timerEl.textContent = `残り時間: ${remain}秒`;
+    if(remain <= 0){
+      clearTimer();
+      // timeout: mark as failed (if not yet correct)
+      if(!resultEl.textContent.includes('✅')){
+        resultEl.textContent = '❌ タイムオーバー';
+        playSE('miss');
+      }
+      // allow Next after timeout
+      window.__allowNextOnTimeout = true;
+      nextBtn.disabled = false;
+    }
+  }, 1000);
+}
+
+function clearTimer(){
+  if(timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
   }
 }
 
-startGame();
+/* =========== 記録（nextボタン） ============ */
+nextBtn.addEventListener('click', ()=>{
+  clearTimer();
+  const elapsed = (Date.now() - startTime) / 1000;
+  const wasCorrect = resultEl.textContent.includes('✅');
+  records.push({ correct: wasCorrect, time: Math.round(elapsed*100)/100 });
+  recordCount++;
+  updateProgress();
+
+  if(recordCount >= roundsTotal){
+    showRecordResult();
+  } else {
+    // reset flag
+    window.__allowNextOnTimeout = false;
+    startGame();
+  }
+});
+
+/* =========== 結果表示 ============ */
+function showRecordResult(){
+  // prepare popup content
+  const correctCount = records.filter(r=>r.correct).length;
+  const correctTimes = records.filter(r=>r.correct).map(r=>r.time.toFixed(2));
+  const correctRate = ((correctCount / roundsTotal) * 100).toFixed(1);
+  const avgSpeed = (correctTimes.length ? (correctTimes.reduce((a,b)=>a+parseFloat(b),0)/correctTimes.length) : 0).toFixed(2);
+
+  let html = '';
+  html += `<p><strong>モード：</strong>${modeLabel}</p>`;
+  html += `<p><strong>正解回数：</strong>${correctCount} / ${roundsTotal}</p>`;
+  html += `<p><strong>正解までにかかった時間（正解のみ・秒）:</strong> ${correctTimes.length ? correctTimes.join(', ') : '—'}</p>`;
+  html += `<p><strong>正解率：</strong>${correctRate}%</p>`;
+  html += `<p><strong>平均タイム：</strong>${avgSpeed} 秒</p>`;
+  html += `<hr />`;
+  html += `<p style="font-size:0.9rem;color:#ddd">閉じる（ホームへ）は index.html に戻ります。もう一度は同じモードで再挑戦します。</p>`;
+
+  scoreContent.innerHTML = html;
+  scoreDisplay.style.display = 'flex';
+}
+
+/* popup buttons */
+closeScore.addEventListener('click', ()=>{
+  // close popup and restart in same mode
+  scoreDisplay.style.display = 'none';
+  // reset and start (same mode)
+  recordCount = 0;
+  records = [];
+  updateProgress();
+  startGame();
+});
+backIndex.addEventListener('click', ()=>{
+  // go to index
+  location.href = 'index.html';
+});
+
+/* =========== 初期化: 隠れたモードピックを表示（UIのモード選択で開始） ============ */
+// show mode select overlay (already visible by default)
+updateProgress();
+// (If you prefer auto-start in a default mode, call applyMode('beginner') and modeSelect.style.display='none' and startGame()).
 </script>
 </body>
 </html>
