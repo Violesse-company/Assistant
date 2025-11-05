@@ -8,25 +8,19 @@
 :root{
   --bg: #0b0712;        /* とても暗い紫/黒 */
   --panel: #2e1229;     /* 深めの紫パネル */
-  --accent: #ff7518;    /* かぼちゃオレンジ（アクセント） */
+  --accent: #ffffff;    /* かぼちゃオレンジ（アクセント） */
   --accent-2: #8b5cf6;  /* 補助の紫（強調時） */
   --text: #f7f1e1;      /* くすんだクリーム（読みやすい） */
   --muted: rgba(255,255,255,0.06);
 }
 *{box-sizing:border-box}
-body{
-  margin:0;
-  font-family: "Segoe UI", Roboto, "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  text-align:center;
-}
+body { font-family: 'Segoe UI'; text-align:center; background:#222; color:#fff; margin:0; padding:0; }
 header{padding:14px 8px}
 h1{margin:6px 0;font-size:clamp(1.1rem,3.6vw,1.8rem)}
 main{padding:8px 12px 80px}
 /* mode selector overlay */
 #modeSelect{
-  position:fixed; inset:0; background:rgba(4,4,8,0.7);
+  position:fixed; inset:0; background:rgba(0, 0, 0, 0.7);
   display:flex; align-items:center; justify-content:center; z-index:2000;
 }
 .modeCard{
@@ -38,8 +32,8 @@ main{padding:8px 12px 80px}
 .modes{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px}
 .modeBtn{
   background: #3b2a3a; /* 暗めの紫寄り */
-  color:var(--text); border:0; padding:10px 14px; border-radius:10px; cursor:pointer;
-  min-width:120px; font-weight:700;
+  color:var(--text); border:0; padding:30px 14px; border-radius:10px; cursor:pointer;
+  min-width:150px; font-weight:700;
   box-shadow: 0 6px 14px rgba(0,0,0,0.6);
 }
 .modeBtn:hover{
@@ -55,7 +49,7 @@ main{padding:8px 12px 80px}
   background:rgba(0,0,0,0.18); padding:6px 10px;border-radius:8px;color:var(--accent)}
 /* target / bar / result */
 #target{font-size:clamp(1rem,3vw,1.3rem); color:var(--accent); margin:12px 0}
-#bar{margin:8px 0; font-weight:700}
+#bar{ font-size:clamp(1.4rem,3.5vw,1.3rem); margin:5px; }
 #result{min-height:1.6em}
 /* plates */
 .plates, .selected-area { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-inline:auto; max-width:900px; }
@@ -137,25 +131,19 @@ main{padding:8px 12px 80px}
 <!-- footer quick links -->
 <div class="footerBtns">
   <div class="leftBtns">
-    <button class="smallBtn" id="setumeiBtn" onclick="location.href='setumei.html'">説明モード</button>
-    <button class="smallBtn" id="rankingBtn" onclick="location.href='ranking.html'">ランキング</button>
+    <button class="smallBtn" id="setumeiBtn" onclick="location.href='menyu.html'">メニュー</button>
   </div>
   <div class="rightBtns">
     <button class="smallBtn" id="practiceBtn" onclick="location.href='index.html'">練習モード</button>
-    <button class="smallBtn" id="feedbackBtn" onclick="location.href='fiidobaItuku.html'">フィードバック</button>
   </div>
 </div>
 
 <!-- mode selector (overlay) -->
 <div id="modeSelect">
   <div class="modeCard">
-    <h2>難易度を選んでください</h2>
-    <p>モードごとに出題範囲と制限時間が変わります。</p>
+    <h2>スタートしてください</h2>
     <div class="modes">
-      <button class="modeBtn" data-mode="beginner">初心者<br><small>25〜120kg / 30秒</small></button>
-      <button class="modeBtn" data-mode="intermediate">中級者<br><small>120〜210kg / 20秒</small></button>
-      <button class="modeBtn" data-mode="full">フルギア勢<br><small>210〜350kg / 20秒</small></button>
-      <button class="modeBtn" data-mode="god">神<br><small>25〜350kg / 10秒（合計非表示）</small></button>
+      <button class="modeBtn" data-mode="beginner"><h2>スタート<br><small></small></h2></button>
     </div>
     <p style="margin-top:12px;font-size:0.9rem;color:#ddd">※ 青プレート（20kg）は「目標が75kg以上」の場合、**最初に置くことはできません**（2枚目以降はOK）。</p>
   </div>
@@ -256,7 +244,7 @@ modeBtns.forEach(btn=>{
 
 function applyMode(m){
   mode = m;
-  if(m==='beginner'){ minW=25; maxW=120; timeLimit=30; hideWeight=false; modeLabel='初心者'; }
+  if(m==='beginner'){ minW=25; maxW=350; timeLimit=30; hideWeight=false; modeLabel='初心者'; }
   else if(m==='intermediate'){ minW=120; maxW=210; timeLimit=20; hideWeight=false; modeLabel='中級者'; }
   else if(m==='full'){ minW=210; maxW=350; timeLimit=20; hideWeight=false; modeLabel='フルギア勢'; }
   else { minW=25; maxW=350; timeLimit=10; hideWeight=true; modeLabel='神'; }
