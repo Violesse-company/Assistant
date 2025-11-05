@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>モード選択</title>
+<style>
+/* ------------------- 全体 ------------------- */
+body {
+    font-family: 'Carter One', cursive;
+    text-align: center;
+    background: #1b0f26 url("https://cdn.pixabay.com/photo/2017/10/25/16/23/halloween-2893710_1280.jpg") center/cover no-repeat;
+    color: #ffeed6;
+    margin: 0;
+    padding: 0;
+}
+
+/* ------------------- タイトル ------------------- */
+h1 {
+    font-size: clamp(1.2rem,4vw,2rem);
+    margin-top: 10px;
+    color: #ffa726;
+    text-shadow: 0 0 8px #ff6f00;
+}
+
+h2 {
+    font-size: clamp(1rem,3.5vw,1.5rem);
+    margin: 5px;
+    color: #ffe0b2;
+    text-shadow: 0 0 5px #ff6f00;
+}
+
+/* ------------------- ボタン ------------------- */
+button {
+    background: #ff6f00;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: clamp(1rem,3vw,1.2rem);
+    box-shadow: 0 0 10px #ff9100;
+    transition: 0.2s;
+}
+button:hover {
+    background: #ffa726;
+    transform: scale(1.05);
+}
+button:disabled {
+    background: #5c3a13;
+    cursor: not-allowed;
+}
+
+/* 個別固定ボタン */
+#setumeiBtn { position: fixed; bottom: 400px; left: 270px; padding: 30px 48px; border-radius: 10px; }
+#rankingBtn { position: fixed; bottom: 500px; left: 270px; padding: 30px 48px; border-radius: 10px; }
+#feedbackBtn { position: fixed; bottom: 600px; left: 270px; padding: 30px 30px; border-radius: 10px; }
+#modruBtn { position: fixed; bottom: 20px; left: 270px; padding: 20px 45px; border-radius: 10px; }
+
+/* ------------------- プレートUI ------------------- */
+.plates, .selected-area {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-inline: auto;
+    max-width: 600px;
+}
+
+.plate, .selected-plate {
+    border-radius: 50%;
+    width: clamp(60px,18vw,80px);
+    height: clamp(60px,18vw,80px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: bold;
+    transition: transform 0.2s;
+    user-select: none;
+    flex-direction: column;
+    box-shadow: 0 0 12px rgba(255, 102, 0, 0.7), 0 0 8px inset #000;
+}
+.plate:active { transform: scale(0.9) rotate(-3deg); }
+.selected-plate { width: clamp(50px,15vw,70px); height: clamp(50px,15vw,70px); font-size: clamp(0.8rem,3vw,1rem); }
+
+/* ------------------- 重量表示 ------------------- */
+#bar, #target, #result {
+    font-size: clamp(1.3rem,3.5vw,1.3rem);
+    margin: 10px;
+    color: #ffd59e;
+    text-shadow: 0 0 6px #ff9100;
+}
+
+/* ------------------- ハンバーガーメニュー ------------------- */
+header {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  height: 60px;
+  z-index: 1000;
+  padding: 10px 20px;
+  background: rgba(0,0,0,0.5);
+}
+
+.hamburger {
+  width: 30px;
+  height: 25px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  z-index: 1100;
+}
+
+.hamburger span {
+  display: block;
+  height: 3px;
+  background: #fff;
+  border-radius: 2px;
+  transition: 0.3s;
+}
+
+.hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+.hamburger.active span:nth-child(2) { opacity: 0; }
+.hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+.nav-menu {
+  position: fixed;
+  top: 0;
+  right: -250px;
+  width: 250px;
+  height: 100%;
+  background: #333;
+  padding-top: 60px;
+  transition: right 0.3s ease;
+  z-index: 1000;
+}
+
+.nav-menu ul { list-style: none; padding: 0; margin: 0; }
+.nav-menu li { border-bottom: 1px solid #444; }
+.nav-menu li a { color: #fff; text-decoration: none; display: block; padding: 15px 20px; font-size: 18px; }
+.nav-menu.active { right: 0; }
+</style>
+</head>
+<body>
+
+<!-- 固定ボタン -->
+<button id="setumeiBtn" onclick="location.href='setumei.html'">説明モード</button>
+<button id="rankingBtn" onclick="location.href='ranking.html'">ランキング</button>
+<button id="feedbackBtn" onclick="location.href='fiidobaltuku.html'">フィードバック</button>
+<button id="modruBtn" onclick="location.href='index.html'">練習に戻る</button>
+
+<script>
+</script>
+
+</body>
+</html>
