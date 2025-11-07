@@ -30,6 +30,7 @@ button {
 button:hover { background:#218838; }
 button:disabled { background:#555; cursor:not-allowed; }
 
+/* プレート */
 .plates, .selected-area { 
     display:flex; 
     justify-content:center; 
@@ -58,7 +59,8 @@ button:disabled { background:#555; cursor:not-allowed; }
     font-size:clamp(0.8rem,3vw,1rem); 
 }
 
-#bar,#target,#result { font-size:clamp(1.4rem,3.5vw,1.3rem); margin:5px; }
+/* 情報表示 */
+#bar, #target, #result { font-size:clamp(1.4rem,3.5vw,1.3rem); margin:5px; }
 
 /* 固定ボタン */
 #setumeiBtn { 
@@ -69,24 +71,29 @@ button:disabled { background:#555; cursor:not-allowed; }
     font-size: clamp(1rem,3vw,1.2rem); 
     border-radius: 10px; 
 }
-
 #recordModeBtn { 
     position: fixed; 
     bottom: 10px; 
-    right: 10px;   /* 左固定から右に変更 */
+    right: 10px; 
     padding: 8px 12px; 
     font-size: clamp(1rem,3vw,1.2rem); 
     border-radius: 10px;
 }
+#okBtn {
+    display: inline-block;
+    margin: 10px auto;
+    padding: 10px 20px;
+    font-size: clamp(1rem,3vw,1.2rem);
+    border-radius: 10px;
+}
 
-/* 小さい画面用に調整 */
+/* 小さい画面用 */
 @media (max-width:520px){
-    #setumeiBtn, #recordModeBtn {
+    #setumeiBtn, #recordModeBtn, #okBtn {
         padding: 6px 10px;
         font-size: clamp(0.9rem,4vw,1.1rem);
     }
 }
-
 </style>
 </head>
 <body>
@@ -95,16 +102,13 @@ button:disabled { background:#555; cursor:not-allowed; }
 <p><h4>アップデート: 予定なし</h4></p>
 <p>バー重量: 20kg</p>
 
-<button id="okBtn" disabled>OK</button>
-
-<button id="recordModeBtn"
-onclick="location.href='kiroku.html';">記録モード</button>
-
+<button id="recordModeBtn" onclick="location.href='kiroku.html';">記録モード</button>
 <button id="setumeiBtn" onclick="location.href='menyu.html'">メニュー</button>
 
 <h2 id="target"></h2>
 <div class="plates" id="plates"></div>
 <p id="bar">現在の合計: 0kg</p>
+<button id="okBtn" disabled>OK</button>
 <p id="result"></p>
 <h3>使用プレート:</h3>
 <div class="selected-area" id="selectedArea"></div>
@@ -121,20 +125,18 @@ const plateData=[
   {weight:1.25,color:'#7fae7f'}
 ];
 
-let selected=[],targetWeight=0;
-let okBtn = document.getElementById('okBtn');
+let selected=[], targetWeight=0;
+const okBtn = document.getElementById('okBtn');
 okBtn.disabled = true;
 
 function startGame(){
   const possibleWeights=[];
-  // 25kg から 350kg まで
   for(let w=25; w<=350; w+=2.5) possibleWeights.push(w);
   targetWeight = possibleWeights[Math.floor(Math.random()*possibleWeights.length)];
   selected=[];
   okBtn.disabled = true;
 
   document.getElementById('target').textContent=`目標重量: ${targetWeight} kg`;
-  document.getElementById('target').style.color='#101ff';
   document.getElementById('result').textContent='';
   document.getElementById('selectedArea').innerHTML='';
   renderPlates();
@@ -150,18 +152,14 @@ function renderPlates(){
     el.textContent=p.label||p.weight;
     el.style.background=p.color;
     el.style.color=p.textColor||'#fff';
-
-el.onclick = () => {
-  // ✅ 75kg以上で、青を押したい、かつ25kgがまだ入ってない → 押せない
-  const has25 = selected.some(x => x.weight === 25);
-  if(targetWeight >= 75 && p.color === "blue" && !has25){
-    document.getElementById('result').textContent = "⚠️ 最初に20kg(青)は置けません。先に25kgを置いてください。";
-    return;
-  }
-  addPlate(p);
-};
-
-
+    el.onclick = () => {
+      const has25 = selected.some(x => x.weight === 25);
+      if(targetWeight >= 75 && p.color === "blue" && !has25){
+        document.getElementById('result').textContent = "⚠️ 最初に20kg(青)は置けません。先に25kgを置いてください。";
+        return;
+      }
+      addPlate(p);
+    };
     div.appendChild(el);
   });
 }
@@ -196,11 +194,8 @@ function updateTotal(){
   const bar = document.getElementById('bar');
   bar.textContent=`現在の合計: ${total.toFixed(2)} kg`;
 
-  // ✅ 目標との差で色変化
   const diff = Math.abs(total - targetWeight);
-  if(diff === 0) bar.style.color = '#0f0';       // 緑：正解
-  else if(diff <= 5) bar.style.color = '#ff0';    // 黄色：近い
-  else bar.style.color = '#fff';                  // 白：まだ遠い
+  bar.style.color = diff === 0 ? '#0f0' : diff <= 5 ? '#ff0' : '#fff';
 
   const lastPlate = selected[selected.length-1];
   const lastPlateIsColor = lastPlate && lastPlate.color==='silver';
@@ -227,11 +222,9 @@ function updateTotal(){
   document.getElementById('result').textContent=resultText;
 }
 
-// ✅ OKボタンで次の目標に進む
 okBtn.onclick = () => { startGame(); };
 
 startGame();
-
 </script>
 
 </body>
