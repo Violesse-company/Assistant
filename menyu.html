@@ -13,21 +13,12 @@ body {
     color: #ffeed6;
     margin: 0;
     padding: 0;
-}
-
-/* ------------------- タイトル ------------------- */
-h1 {
-    font-size: clamp(1.2rem,4vw,2rem);
-    margin-top: 10px;
-    color: #7a5f35;
-    text-shadow: 0 0 8px #ff6f00;
-}
-
-h2 {
-    font-size: clamp(1rem,3.5vw,1.5rem);
-    margin: 5px;
-    color: #ffe0b2;
-    text-shadow: 0 0 5px #ff6f00;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    gap: 20px; /* ボタン間の隙間 */
 }
 
 /* ------------------- ボタン ------------------- */
@@ -40,119 +31,37 @@ button {
     font-size: clamp(1rem,3vw,1.2rem);
     box-shadow: 0 0 10px #a39481;
     transition: 0.2s;
+    padding: 16px 24px; /* ボタン内余白 */
+    width: min(80%, 300px); /* 幅を画面サイズに合わせる */
 }
+
+/* ホバー効果 */
 button:hover {
-    background: #38342f;
-    transform: scale(1.05);
-}
-button:disabled {
-    background: #5c3a13;
-    cursor: not-allowed;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 20px #a39481;
 }
 
-/* 個別固定ボタン */
-#setumeiBtn { position: fixed; bottom: 400px; left: 270px; padding: 30px 48px; border-radius: 10px; }
-#rankingBtn { position: fixed; bottom: 500px; left: 270px; padding: 30px 48px; border-radius: 10px; }
-#feedbackBtn { position: fixed; bottom: 600px; left: 270px; padding: 30px 30px; border-radius: 10px; }
-#modruBtn { position: fixed; bottom: 20px; left: 270px; padding: 20px 45px; border-radius: 10px; }
-
-/* ------------------- プレートUI ------------------- */
-.plates, .selected-area {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-inline: auto;
-    max-width: 600px;
+/* メディアクエリ：小さいスマホ用 */
+@media (max-width: 480px) {
+    body {
+        gap: 12px;
+        padding: 12px;
+    }
+    button {
+        font-size: clamp(0.9rem,4vw,1.1rem);
+        padding: 12px 18px;
+        width: 90%;
+    }
 }
-
-.plate, .selected-plate {
-    border-radius: 50%;
-    width: clamp(60px,18vw,80px);
-    height: clamp(60px,18vw,80px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-weight: bold;
-    transition: transform 0.2s;
-    user-select: none;
-    flex-direction: column;
-    box-shadow: 0 0 12px rgba(189, 165, 148, 0.7), 0 0 8px inset #000;
-}
-.plate:active { transform: scale(0.9) rotate(-3deg); }
-.selected-plate { width: clamp(50px,15vw,70px); height: clamp(50px,15vw,70px); font-size: clamp(0.8rem,3vw,1rem); }
-
-/* ------------------- 重量表示 ------------------- */
-#bar, #target, #result {
-    font-size: clamp(1.3rem,3.5vw,1.3rem);
-    margin: 10px;
-    color: #282016;
-    text-shadow: 0 0 6px #ff9100;
-}
-
-/* ------------------- ハンバーガーメニュー ------------------- */
-header {
-  position: relative;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  height: 60px;
-  z-index: 1000;
-  padding: 10px 20px;
-  background: rgba(0,0,0,0.5);
-}
-
-.hamburger {
-  width: 30px;
-  height: 25px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  cursor: pointer;
-  z-index: 1100;
-}
-
-.hamburger span {
-  display: block;
-  height: 3px;
-  background: #fff;
-  border-radius: 2px;
-  transition: 0.3s;
-}
-
-.hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
-.hamburger.active span:nth-child(2) { opacity: 0; }
-.hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
-
-.nav-menu {
-  position: fixed;
-  top: 0;
-  right: -250px;
-  width: 250px;
-  height: 100%;
-  background: #333;
-  padding-top: 60px;
-  transition: right 0.3s ease;
-  z-index: 1000;
-}
-
-.nav-menu ul { list-style: none; padding: 0; margin: 0; }
-.nav-menu li { border-bottom: 1px solid #444; }
-.nav-menu li a { color: #fff; text-decoration: none; display: block; padding: 15px 20px; font-size: 18px; }
-.nav-menu.active { right: 0; }
 </style>
 </head>
 <body>
 
-<!-- 固定ボタン -->
-<button id="setumeiBtn" onclick="location.href='setumei.html'">説明モード</button>
-<button id="rankingBtn" onclick="location.href='ranking.html'">ランキング</button>
-<button id="feedbackBtn" onclick="location.href='fiidobaItuku.html'">フィードバック</button>
-<button id="modruBtn" onclick="location.href='index.html'">練習に戻る</button>
-
-<script>
-</script>
+<!-- スマホ対応済みボタン（縦に並ぶ） -->
+<button onclick="location.href='setumei.html'">説明モード</button>
+<button onclick="location.href='ranking.html'">ランキング</button>
+<button onclick="location.href='fiidobaltuku.html'">フィードバック</button>
+<button onclick="location.href='index.html'">練習に戻る</button>
 
 </body>
 </html>
