@@ -6,72 +6,75 @@
 <title>補助員重量計算ゲーム（記録モード）</title>
 <style>
 :root{
-  --bg: #0b0712;        /* とても暗い紫/黒 */
-  --panel: #2e1229;     /* 深めの紫パネル */
-  --accent: #ffffff;    /* かぼちゃオレンジ（アクセント） */
-  --accent-2: #8b5cf6;  /* 補助の紫（強調時） */
-  --text: #f7f1e1;      /* くすんだクリーム（読みやすい） */
+  --bg: #0b0712;
+  --panel: #2e1229;
+  --accent: #ffffff;
+  --accent-2: #8b5cf6;
+  --text: #f7f1e1;
   --muted: rgba(255,255,255,0.06);
 }
-*{box-sizing:border-box}
+*{box-sizing:border-box;}
 body { font-family: 'Segoe UI'; text-align:center; background:#222; color:#fff; margin:0; padding:0; }
-header{padding:14px 8px}
-h1{margin:6px 0;font-size:clamp(1.1rem,3.6vw,1.8rem)}
-main{padding:8px 12px 80px}
-/* mode selector overlay */
+header{padding:14px 8px;}
+h1{margin:6px 0;font-size:clamp(1.1rem,3.6vw,1.8rem);}
+main{padding:8px 12px 100px;} /* 下スペース拡張 */
+
+/* モード選択 */
 #modeSelect{
-  position:fixed; inset:0; background:rgba(0, 0, 0, 0.7);
+  position:fixed; inset:0; background:rgba(0,0,0,0.7);
   display:flex; align-items:center; justify-content:center; z-index:2000;
 }
 .modeCard{
   background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.12));
   border: 1px solid rgba(255,255,255,0.03);
-  padding:18px; border-radius:12px; width:min(640px,92%);
+  padding:18px; border-radius:12px;
+  width: 90vw; max-width: 600px;
   box-shadow:0 10px 40px rgba(0,0,0,0.7); text-align:center;
 }
-.modes{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px}
+.modes{
+  display:flex; flex-direction:column; gap:10px; margin-top:12px;
+}
 .modeBtn{
-  background: #3b2a3a; /* 暗めの紫寄り */
-  color:var(--text); border:0; padding:30px 14px; border-radius:10px; cursor:pointer;
-  min-width:150px; font-weight:700;
-  box-shadow: 0 6px 14px rgba(0,0,0,0.6);
+  background: #3b2a3a; color:var(--text); border:0;
+  padding:18px 14px; border-radius:10px; cursor:pointer;
+  font-weight:700; font-size: clamp(1rem,4vw,1.2rem);
 }
 .modeBtn:hover{
   background: linear-gradient(90deg,var(--accent), #ff9b4a);
-  color:#1b0111;
-  transform: translateY(-3px);
+  color:#1b0111; transform: translateY(-3px);
 }
-.modeBtn.active{outline:3px solid rgba(255,117,24,0.12)}
+.modeBtn.active{outline:3px solid rgba(255,117,24,0.12);}
+
 /* top bar */
 #progress{position:fixed; top:10px; left:10px; font-weight:700;
-  background:rgba(0,0,0,0.25); padding:6px 10px;border-radius:8px}
+  background:rgba(0,0,0,0.25); padding:6px 10px;border-radius:8px;}
 #timer{position:fixed; top:10px; right:10px; font-weight:700;
-  background:rgba(0,0,0,0.18); padding:6px 10px;border-radius:8px;color:var(--accent)}
+  background:rgba(0,0,0,0.18); padding:6px 10px;border-radius:8px;color:var(--accent);}
+
 /* target / bar / result */
-#target{font-size:clamp(1rem,3vw,1.3rem); color:var(--accent); margin:12px 0}
+#target{font-size:clamp(1.4rem,4vw,1.8rem); color:var(--accent); margin:12px 0;}
 #bar{ font-size:clamp(1.4rem,3.5vw,1.3rem); margin:5px; }
-#result{min-height:1.6em}
+#result{min-height:1.6em;}
+
 /* plates */
 .plates, .selected-area { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-inline:auto; max-width:900px; }
 .plate, .selected-plate {
   border-radius:50%; width:clamp(56px,14vw,84px); height:clamp(56px,14vw,84px);
   display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:800;
   user-select:none; transition:transform 160ms ease, box-shadow 160ms;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.6);
-  border: 2px solid rgba(255,255,255,0.03);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.6); border: 2px solid rgba(255,255,255,0.03);
 }
-.plate:active{transform:scale(.96)}
-.selected-plate { width:clamp(46px,12vw,68px); height:clamp(46px,12vw,68px); font-size:0.95rem; }
+.plate:active{transform:scale(.96);}
+.selected-plate { font-size:0.95rem; } /* プレート内文字統一 */
+
 /* left/right placement animation */
-.placed-left{ transform-origin:center left; animation:place-left 280ms ease forwards; }
-.placed-right{ transform-origin:center right; animation:place-right 280ms ease forwards; }
 @keyframes place-left { from { transform: translateY(-10px) scale(.9) } to { transform: translateX(-6px) translateY(0) scale(1) } }
 @keyframes place-right { from { transform: translateY(-10px) scale(.9) } to { transform: translateX(6px) translateY(0) scale(1) } }
 
-/* footer action buttons */
-.footerBtns{position:fixed; bottom:10px; left:10px; right:10px; display:flex; justify-content:space-between; gap:8px}
-.leftBtns{display:flex; gap:8px}
-.rightBtns{display:flex; gap:8px}
+/* footer / action buttons */
+.footerBtns{position:fixed; bottom:10px; left:10px; right:10px; display:flex; justify-content:space-between; gap:8px;}
+.leftBtns{display:flex; gap:8px;}
+.rightBtns{display:flex; gap:8px;}
 .smallBtn{
   background: linear-gradient(180deg,#2b1b2f, #2f2236);
   color:var(--text); border:0; padding:8px 12px; border-radius:10px; cursor:pointer;
@@ -83,22 +86,47 @@ main{padding:8px 12px 80px}
 }
 
 /* next / big controls area */
-.controls{margin:14px 0}
-#nextBtn{background:var(--accent); color:#1b0111; border:0; padding:12px 20px; border-radius:12px; font-size:1rem; cursor:pointer}
-#nextBtn:disabled{background:#6b6b6b; cursor:not-allowed; color:#ddd}
+.controls {
+  margin: 12px 0;
+  display: flex;
+  justify-content: center; /* 中央揃え */
+}
+#nextBtn {
+  position: static; /* fixed をやめる */
+  background: var(--accent);
+  color: #1b0111;
+  border: 0;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+#nextBtn:disabled{background:#6b6b6b; cursor:not-allowed; color:#ddd;}
+
+/* clear button */
+#clearBtn{
+  position: fixed;
+  bottom:60px;
+  left:50%;
+  transform:translateX(-50%);
+  padding:10px 16px; border-radius:10px; border:none;
+  background: var(--accent-2); color:#fff; cursor:pointer; font-weight:700; z-index:1000;
+}
 
 /* result popup */
-#scoreDisplay{position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.7); z-index:3000}
-.scoreCard{background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.12)); padding:18px; border-radius:14px; width:min(760px,95%); text-align:left}
-.scoreCard h2{margin-top:0}
-.scoreRow{display:flex;gap:8px;flex-wrap:wrap}
-.closeBtn{background:var(--accent); color:#12030a; border:0; padding:8px 12px; border-radius:10px; cursor:pointer}
-.backIndex{background:#5b3b3b; color:var(--text); border:0; padding:8px 12px; border-radius:10px; cursor:pointer; margin-left:8px}
+#scoreDisplay{position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.7); z-index:3000;}
+.scoreCard{background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.12)); padding:18px; border-radius:14px; width:min(760px,95%); text-align:left;}
+.scoreCard h2{margin-top:0;}
+.scoreRow{display:flex;gap:8px;flex-wrap:wrap;}
+.closeBtn{background:var(--accent); color:#12030a; border:0; padding:8px 12px; border-radius:10px; cursor:pointer;}
+.backIndex{background:#5b3b3b; color:var(--text); border:0; padding:8px 12px; border-radius:10px; cursor:pointer; margin-left:8px;}
 
 /* responsive tweak */
 @media (max-width:520px){
-  .modeBtn{min-width:44%; padding:10px}
-  .plates, .selected-area{gap:8px}
+  .modeBtn{
+    padding:12px 10px;
+    font-size: clamp(0.9rem,4vw,1.1rem);
+  }
 }
 
 </style>
@@ -117,15 +145,15 @@ main{padding:8px 12px 80px}
 
   <div class="plates" id="plates"></div>
 
+    <div class="controls">
+    <button id="nextBtn" disabled>次へ</button>
+  </div>
+
   <p id="bar">現在の合計: 0kg</p>
   <p id="result"></p>
 
   <h3>使用プレート:</h3>
   <div class="selected-area" id="selectedArea"></div>
-
-  <div class="controls">
-    <button id="nextBtn" disabled>次へ</button>
-  </div>
 </main>
 
 <!-- footer quick links -->
