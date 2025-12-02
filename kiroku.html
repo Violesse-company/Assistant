@@ -514,6 +514,13 @@ backIndex.addEventListener('click', ()=>{
   location.href = 'index.html';
 });
 
+// ページ読み込み時にアップデート中なら移動
+const isUpdating = false; // trueならアップデート中　falseならアップデート完了
+if (isUpdating) {
+  // sinseiフォルダから見たパス
+  window.location.href = "purokisi.atlupudeto.html";
+}
+
 /* =========== 初期化: 隠れたモードピックを表示（UIのモード選択で開始） ============ */
 // show mode select overlay (already visible by default)
 updateProgress();
