@@ -121,6 +121,16 @@ main{padding:8px 12px 100px;} /* 下スペース拡張 */
 .closeBtn{background:var(--accent); color:#12030a; border:0; padding:8px 12px; border-radius:10px; cursor:pointer;}
 .backIndex{background:#5b3b3b; color:var(--text); border:0; padding:8px 12px; border-radius:10px; cursor:pointer; margin-left:8px;}
 
+#snowCanvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* 雪がクリックを邪魔しない */
+  z-index: 9999;
+}
+
 /* responsive tweak */
 @media (max-width:520px){
   .modeBtn{
@@ -176,6 +186,8 @@ main{padding:8px 12px 100px;} /* 下スペース拡張 */
     <p style="margin-top:12px;font-size:0.9rem;color:#ddd">※ 青プレート（20kg）は「目標が75kg以上」の場合、**最初に置くことはできません**（2枚目以降はOK）。</p>
   </div>
 </div>
+
+  <canvas id="snowCanvas"></canvas>
 
 <!-- score popup -->
 <div id="scoreDisplay">
@@ -514,11 +526,65 @@ backIndex.addEventListener('click', ()=>{
   location.href = 'index.html';
 });
 
+const canvas = document.getElementById('snowCanvas');
+const ctx = canvas.getContext('2d');
+let width = canvas.width = window.innerWidth;
+let height = canvas.height = window.innerHeight;
+
+const snowflakes = [];
+const snowCount = 100; // 雪の粒の数
+
+// 雪の粒の初期化
+for (let i = 0; i < snowCount; i++) {
+  snowflakes.push({
+    x: Math.random() * width,
+    y: Math.random() * height,
+    radius: Math.random() * 4 + 1, // サイズ
+    speed: Math.random() * 1 + 0.5, // 落下速度
+    wind: Math.random() * 1 - 0.5 // 左右の揺れ
+  });
+}
+
+// 描画ループ
+function drawSnow() {
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = 'white';
+  ctx.beginPath();
+  
+  snowflakes.forEach(flake => {
+    ctx.moveTo(flake.x, flake.y);
+    ctx.arc(flake.x, flake.y, flake.radius, 0, Math.PI * 2);
+  });
+  
+  ctx.fill();
+
+  // 雪の位置更新
+  snowflakes.forEach(flake => {
+    flake.y += flake.speed;
+    flake.x += flake.wind;
+    
+    if (flake.y > height) flake.y = 0;
+    if (flake.x > width) flake.x = 0;
+    if (flake.x < 0) flake.x = width;
+  });
+
+  requestAnimationFrame(drawSnow);
+}
+
+drawSnow();
+
+// 画面サイズ変更対応
+window.addEventListener('resize', () => {
+  width = canvas.width = window.innerWidth;
+  height = canvas.height = window.innerHeight;
+});
+
+
 // ページ読み込み時にアップデート中なら移動
 const isUpdating = false; // trueならアップデート中　falseならアップデート完了
 if (isUpdating) {
   // sinseiフォルダから見たパス
-  window.location.href = "purokisi.html";
+  window.location.href = "purokisi.atlupudeto.html";
 }
 
 /* =========== 初期化: 隠れたモードピックを表示（UIのモード選択で開始） ============ */
