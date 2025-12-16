@@ -41,6 +41,17 @@ button:hover {
     box-shadow: 0 4px 20px #a39481;
 }
 
+#snowCanvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* 雪がクリックを邪魔しない */
+  z-index: 9999;
+}
+
+
 /* メディアクエリ：小さいスマホ用 */
 @media (max-width: 480px) {
     body {
@@ -60,9 +71,65 @@ button:hover {
 <!-- スマホ対応済みボタン（縦に並ぶ） -->
 <button onclick="location.href='setumei.html'">説明モード</button>
 <button onclick="location.href='ranking.html'">ランキング</button>
-<button onclick="location.href='fiidobaItuku.html'">フィードバック</button>
+<button onclick="location.href='fiidobaltuku.html'">フィードバック</button>
 <button onclick="location.href='altupudeto.html'">アップデート</button>
 <button onclick="location.href='index.html'">練習に戻る</button>
 
+  <canvas id="snowCanvas"></canvas>
+<script>
+const canvas = document.getElementById('snowCanvas');
+const ctx = canvas.getContext('2d');
+let width = canvas.width = window.innerWidth;
+let height = canvas.height = window.innerHeight;
+
+const snowflakes = [];
+const snowCount = 100; // 雪の粒の数
+
+// 雪の粒の初期化
+for (let i = 0; i < snowCount; i++) {
+  snowflakes.push({
+    x: Math.random() * width,
+    y: Math.random() * height,
+    radius: Math.random() * 4 + 1, // サイズ
+    speed: Math.random() * 1 + 0.5, // 落下速度
+    wind: Math.random() * 1 - 0.5 // 左右の揺れ
+  });
+}
+
+// 描画ループ
+function drawSnow() {
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = 'white';
+  ctx.beginPath();
+  
+  snowflakes.forEach(flake => {
+    ctx.moveTo(flake.x, flake.y);
+    ctx.arc(flake.x, flake.y, flake.radius, 0, Math.PI * 2);
+  });
+  
+  ctx.fill();
+
+  // 雪の位置更新
+  snowflakes.forEach(flake => {
+    flake.y += flake.speed;
+    flake.x += flake.wind;
+    
+    if (flake.y > height) flake.y = 0;
+    if (flake.x > width) flake.x = 0;
+    if (flake.x < 0) flake.x = width;
+  });
+
+  requestAnimationFrame(drawSnow);
+}
+
+drawSnow();
+
+// 画面サイズ変更対応
+window.addEventListener('resize', () => {
+  width = canvas.width = window.innerWidth;
+  height = canvas.height = window.innerHeight;
+});
+
+</script>
 </body>
 </html>
