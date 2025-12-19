@@ -61,6 +61,24 @@
   z-index: 9999;
 }
 
+.rank-bronze { color: #CD7F32; }
+.rank-silver { color: #C0C0C0; }
+.rank-gold   { color: #FFD700; }
+.rank-elite  { color: #7FDBFF; text-shadow: 0 0 6px #7FDBFF; }
+
+.rank-1 {
+  background: linear-gradient(135deg, #fff3b0, #ffe066);
+  font-weight: bold;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+}
+.rank-2 {
+  background: linear-gradient(135deg, #f5f7fa, #cfd9df);
+  font-weight: bold;
+}
+.rank-3 {
+  background: linear-gradient(135deg, #f7c59f, #d08c60);
+  font-weight: bold;
+}
 </style>
 </head>
 <body>
@@ -76,33 +94,37 @@
       <th>名前</th>
       <th>正解率(%)</th>
       <th>平均スピード(秒)</th>
+      <th>ランク</th>
       <th>管理者から絵文字</th>
     </tr>
   </thead>
 
   <tbody>
     <!-- ▼▼▼ ここを書き換えるだけで追加可能 ▼▼▼ -->
-    <tr>
+    <tr class="rank-1">
       <td>1位</td>
       <td>kouseiさん</td>
       <td>100%</td>
       <td>1.58s</td>
+      <td class="rank-elite">エリート</td>
       <td>🥇</td>
     </tr>
 
-    <tr>
+    <tr class="rank-2">
       <td>2位</td>
       <td>Ryota Satoさん</td>
       <td>100%</td>
       <td>1.87s</td>
+      <td class="rank-elite">エリート</td>
       <td>🥈</td>
     </tr>
 
-    <tr>
+    <tr class="rank-3">
       <td>3位</td>
       <td>逢野崇大さん</td>
       <td>100%</td>
       <td>2.49s</td>
+      <td class="rank-gold">ゴールド</td>
       <td>🥉</td>
     </tr>
 
@@ -111,6 +133,7 @@
       <td>タクミさん</td>
       <td>100%</td>
       <td>2.58s</td>
+      <td class="rank-gold">ゴールド</td>
       <td>🎖</td>
     </tr>
 
@@ -119,6 +142,7 @@
       <td>のむさん</td>
       <td>100%</td>
       <td>5.37s</td>
+      <td class="rank-silver">シルバー</td>
       <td>🎖</td>
     </tr>
 
@@ -127,6 +151,7 @@
       <td>ぽ ん す けさん</td>
       <td>100%</td>
       <td>5.55s</td>
+      <td class="rank-bronze">ブロンズ</td>
       <td>👍</td>
     </tr>
 
@@ -135,6 +160,7 @@
       <td>wakou</td>
       <td>100%</td>
       <td>7.58s</td>
+      <td class="rank-bronze">ブロンズ</td>
       <td>👀</td>
     </tr>
 
@@ -143,6 +169,7 @@
       <td>yuuta_perfect</td>
       <td>100%</td>
       <td>7.77s</td>
+      <td class="rank-bronze">ブロンズ</td>
       <td>🏎</td>
     </tr>
     <!-- ▲▲▲ ここに増やす ▲▲▲ -->
@@ -210,12 +237,6 @@ window.addEventListener('resize', () => {
   width = canvas.width = window.innerWidth;
   height = canvas.height = window.innerHeight;
 });
-
-</script>
-
-</body>
-</html>
-
 </script>
 
 </body>
